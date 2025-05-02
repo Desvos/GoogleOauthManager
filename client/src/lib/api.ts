@@ -22,7 +22,7 @@ export async function exchangeAuthCodeForToken(
       code,
       client_id: clientId,
       client_secret: clientSecret,
-      redirect_uri: "http://localhost",
+      redirect_uri: window.location.origin,
       grant_type: "authorization_code",
     }),
   });

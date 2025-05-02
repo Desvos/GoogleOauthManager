@@ -1,10 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Clipboard, ArrowLeft } from "lucide-react";
+import { Card, Alert, Button, Skeleton, Typography, Space, Divider } from "antd";
+import { CopyOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import { useMutation } from "@tanstack/react-query";
 import { exchangeAuthCodeForToken } from "@/lib/api";
 import JsonView from "@/components/ui/json-view";
@@ -81,109 +78,128 @@ export default function AuthCode() {
     navigator.clipboard.writeText(text);
   };
 
+  const { Title, Paragraph, Text } = Typography;
+
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold mb-2">Google OAuth2 Tool</h1>
-        <p className="text-gray-500">Retrieve OAuth refresh tokens for AdWords API integration</p>
+    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+        <Title level={2}>Google OAuth2 Tool</Title>
+        <Paragraph type="secondary">Retrieve OAuth refresh tokens for AdWords API integration</Paragraph>
       </div>
       
       <AuthSteps currentStep={currentStep} className="mb-8" />
       
       {error && (
-        <Alert variant="destructive" className="mb-6">
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+        <Alert
+          message="Error"
+          description={error}
+          type="error"
+          showIcon
+          style={{ marginBottom: '20px' }}
+        />
       )}
       
-      <Card className="w-full shadow-md">
-        <CardHeader>
-          <CardTitle>
-            {exchangeTokenMutation.data ? "Refresh Token Retrieved" : "Authorization Code Received"}
-          </CardTitle>
-          <CardDescription>
-            {exchangeTokenMutation.data 
-              ? "Successfully exchanged the authorization code for tokens. Here's the response from Google's token endpoint:" 
-              : "Google has returned an authorization code. Click the button below to exchange it for a refresh token."}
-          </CardDescription>
-        </CardHeader>
+      <Card
+        title={exchangeTokenMutation.data ? "Refresh Token Retrieved" : "Authorization Code Received"}
+        style={{ marginBottom: '20px' }}
+      >
+        <Paragraph>
+          {exchangeTokenMutation.data 
+            ? "Successfully exchanged the authorization code for tokens. Here's the response from Google's token endpoint:" 
+            : "Google has returned an authorization code. Click the button below to exchange it for a refresh token."}
+        </Paragraph>
         
-        <CardContent>
-          {!exchangeTokenMutation.data && code && (
-            <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded my-4 overflow-x-auto">
-              <div className="flex justify-between items-center">
-                <code className="text-sm font-mono break-all">
-                  {code.length > 40 ? `${code.substring(0, 40)}...` : code}
-                </code>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => copyToClipboard(code)}
-                >
-                  <Clipboard className="h-4 w-4" />
-                </Button>
+        {!exchangeTokenMutation.data && code && (
+          <div style={{ 
+            backgroundColor: '#f5f5f5', 
+            padding: '12px', 
+            borderRadius: '4px', 
+            margin: '16px 0', 
+            overflow: 'auto' 
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <code style={{ 
+                fontSize: '14px', 
+                fontFamily: 'monospace', 
+                wordBreak: 'break-all' 
+              }}>
+                {code.length > 40 ? `${code.substring(0, 40)}...` : code}
+              </code>
+              <Button 
+                type="text"
+                icon={<CopyOutlined />}
+                onClick={() => copyToClipboard(code)}
+              />
+            </div>
+          </div>
+        )}
+        
+        {exchangeTokenMutation.isPending && (
+          <div>
+            <Skeleton active paragraph={{ rows: 4 }} />
+          </div>
+        )}
+        
+        {exchangeTokenMutation.data && (
+          <>
+            <JsonView data={exchangeTokenMutation.data} />
+            
+            {exchangeTokenMutation.data.refresh_token && (
+              <div style={{ marginTop: '20px' }}>
+                <Alert
+                  message={
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <span>Refresh Token</span>
+                      <Button 
+                        type="text"
+                        icon={<CopyOutlined />}
+                        size="small"
+                        style={{ marginLeft: '8px' }}
+                        onClick={() => copyToClipboard(exchangeTokenMutation.data.refresh_token)}
+                      />
+                    </div>
+                  }
+                  description={
+                    <Text code style={{ wordBreak: 'break-all' }}>
+                      {exchangeTokenMutation.data.refresh_token}
+                    </Text>
+                  }
+                  type="success"
+                  showIcon
+                />
               </div>
-            </div>
-          )}
-          
-          {exchangeTokenMutation.isPending && (
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-3/4" />
-            </div>
-          )}
-          
-          {exchangeTokenMutation.data && (
-            <>
-              <JsonView data={exchangeTokenMutation.data} />
-              
-              {exchangeTokenMutation.data.refresh_token && (
-                <Alert className="mt-6 bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-900">
-                  <AlertTitle className="flex items-center">
-                    Refresh Token
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="ml-2" 
-                      onClick={() => copyToClipboard(exchangeTokenMutation.data.refresh_token)}
-                    >
-                      <Clipboard className="h-4 w-4" />
-                    </Button>
-                  </AlertTitle>
-                  <AlertDescription className="font-mono text-sm break-all">
-                    {exchangeTokenMutation.data.refresh_token}
-                  </AlertDescription>
-                </Alert>
-              )}
-            </>
-          )}
-        </CardContent>
+            )}
+          </>
+        )}
         
-        <CardFooter className="flex justify-center">
+        <Divider />
+        
+        <div style={{ textAlign: 'center' }}>
           {exchangeTokenMutation.data ? (
-            <Button onClick={handleRestart}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
+            <Button 
+              onClick={handleRestart}
+              icon={<ArrowLeftOutlined />}
+            >
               Restart Process
             </Button>
           ) : (
             <Button 
+              type="primary"
               onClick={handleGetRefreshToken} 
               disabled={!code || exchangeTokenMutation.isPending}
+              loading={exchangeTokenMutation.isPending}
             >
               {exchangeTokenMutation.isPending ? "Processing..." : "Get Refresh Token"}
             </Button>
           )}
-        </CardFooter>
+        </div>
       </Card>
       
-      <div className="mt-8 text-center">
-        <p className="text-sm text-gray-500">
+      <div style={{ textAlign: 'center', marginTop: '20px' }}>
+        <Paragraph type="secondary" style={{ fontSize: '12px' }}>
           This tool helps you obtain refresh tokens for Google API integration.
           No data is stored on our servers.
-        </p>
+        </Paragraph>
       </div>
     </div>
   );
