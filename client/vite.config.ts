@@ -2,7 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 
-export default defineConfig(({ mode }) => ({
+export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
@@ -26,6 +26,6 @@ export default defineConfig(({ mode }) => ({
       strict: false,
     },
     // Allow any Replit domain to access the dev server
-    allowedHosts: ['localhost', '.replit.dev', '.repl.co', '.repl.it'],
+    allowedHosts: true,
   },
 });
