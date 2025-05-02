@@ -24,7 +24,15 @@ export default function AuthCode() {
       if (!code || !clientId || !clientSecret) {
         throw new Error("Missing required credentials");
       }
-      return exchangeAuthCodeForToken(code, clientId, clientSecret);
+      try {
+        // Call the function directly without going through the backend
+        return await exchangeAuthCodeForToken(code, clientId, clientSecret);
+      } catch (error) {
+        if (error instanceof Error) {
+          throw error;
+        }
+        throw new Error("An unexpected error occurred");
+      }
     },
     onSuccess: () => {
       setCurrentStep(3);

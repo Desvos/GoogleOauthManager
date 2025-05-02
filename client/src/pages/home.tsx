@@ -17,7 +17,7 @@ export default function Home() {
     localStorage.setItem("clientSecret", clientSecret);
     
     // Redirect to Google OAuth
-    const authUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${clientId}&redirect_uri=http://localhost&response_type=code&scope=https://www.googleapis.com/auth/adwords&access_type=offline`;
+    const authUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${clientId}&redirect_uri=http://localhost&response_type=code&scope=https://www.googleapis.com/auth/adwords&access_type=offline&prompt=consent`;
     setCurrentStep(1);
     
     // Wait a short time before redirecting to let the user see the state change
